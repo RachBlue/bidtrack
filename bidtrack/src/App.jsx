@@ -156,9 +156,12 @@ Using your knowledge of current construction costs in that region, provide a det
         })
       });
       const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
+console.log("API response:", JSON.stringify(data));
+const text = data.content?.find(b => b.type === "text")?.text || "";
+console.log("Text:", text);
+const clean = text.replace(/```json|```/g, "").trim();
+console.log("Clean:", clean);
+const parsed = JSON.parse(clean);
       setResult({ ...parsed, form: { ...form } });
     } catch (e) {
       setError("Estimation failed. Check your connection and try again.");
