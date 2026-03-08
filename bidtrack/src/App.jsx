@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const INITIAL_LEADS = [
-  { id: 1, project: "Riverside Office Complex", client: "Meridian Developers", value: 2400000, type: "Office", stage: "Bidding", dueDate: "2026-03-18", contact: "Sarah Cho", lastTouch: "2026-03-01", winProb: 65 },
-  { id: 2, project: "Eastside Retail Center", client: "Urban Retail Group", value: 870000, type: "Retail", stage: "Qualified", dueDate: "2026-03-25", contact: "James Ruiz", lastTouch: "2026-02-28", winProb: 40 },
-  { id: 3, project: "Harbor Medical Annex", client: "CityHealth Systems", value: 5100000, type: "Medical", stage: "Prospect", dueDate: "2026-04-10", contact: "Dr. Patel", lastTouch: "2026-02-20", winProb: 25 },
-  { id: 4, project: "Downtown Parking Garage", client: "City of Lakewood", value: 3200000, type: "Municipal", stage: "Won", dueDate: "2026-02-15", contact: "Mike Torres", lastTouch: "2026-03-02", winProb: 100 },
-  { id: 5, project: "Lakeview Hotel Renovation", client: "Summit Hospitality", value: 1650000, type: "Hospitality", stage: "Bidding", dueDate: "2026-03-20", contact: "Lena Park", lastTouch: "2026-03-03", winProb: 55 },
-  { id: 6, project: "Industrial Warehouse Build", client: "Pacific Logistics Co.", value: 990000, type: "Industrial", stage: "Lost", dueDate: "2026-02-28", contact: "Bob Crane", lastTouch: "2026-02-27", winProb: 0 },
-];
+const STORAGE_KEY = "bidtrack_leads";
+
+function loadLeads() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
 
 const STAGE_CONFIG = {
   Prospect:  { color: "#94a3b8", bg: "#1e293b", dot: "#64748b" },
@@ -43,12 +45,19 @@ function Badge({ stage }) {
 }
 
 export default function BidPipeline() {
-  const [leads, setLeads] = useState(INITIAL_LEADS);
+  const [leads, setLeads] = useState(() => loadLeads());
   const [filter, setFilter] = useState("All");
   const [view, setView] = useState("pipeline"); // pipeline | kanban
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
   const [newLead, setNewLead] = useState({ project: "", client: "", value: "", type: "Office", stage: "Prospect", dueDate: "", contact: "", winProb: 30 });
+
+  // Save to localStorage whenever leads change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
+    } catch {}
+  }, [leads]);
 
   const types = ["All", ...Array.from(new Set(leads.map(l => l.type)))];
   const filtered = filter === "All" ? leads : leads.filter(l => l.type === filter);
@@ -159,6 +168,15 @@ export default function BidPipeline() {
             </tr>
           </thead>
           <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ padding: "60px 28px", textAlign: "center", color: "#334155" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+                  <div style={{ color: "#475569", fontSize: 14, marginBottom: 6 }}>No leads yet</div>
+                  <div style={{ color: "#334155", fontSize: 12 }}>Click "+ Add Lead" to add your first bid</div>
+                </td>
+              </tr>
+            )}
             {filtered.map(lead => {
               const days = daysUntil(lead.dueDate);
               const urgent = days >= 0 && days <= urgentDays && !["Won","Lost"].includes(lead.stage);
