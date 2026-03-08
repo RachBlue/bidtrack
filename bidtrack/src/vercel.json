@@ -1,8 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }],
-  "functions": {
-    "api/*.js": {
-      "runtime": "edge"
-    }
-  }
+  "rewrites": [
+    { "source": "/app/(.*)", "destination": "/app/index.html" },
+    { "source": "/app", "destination": "/app/index.html" },
+    { "source": "/", "destination": "/index.html" }
+  ]
 }
