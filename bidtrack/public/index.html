@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BidTrack — Win More Commercial Contracts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b12;
+      --surface: #0c1322;
+      --border: #1a2a42;
+      --text: #e2e8f0;
+      --muted: #5a7090;
+      --accent: #f0921a;
+      --accent2: #e67e10;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --grid: rgba(255,255,255,0.02);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 400;
+      overflow-x: hidden;
+    }
+
+    /* Grid texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(7,11,18,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-diamond {
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    .nav-wordmark {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: 0.12em;
+      color: #f8fafc;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--accent) !important;
+      color: #070b12 !important;
+      padding: 8px 20px !important;
+      border-radius: 4px !important;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      letter-spacing: 0.06em !important;
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 48px 80px;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(240,146,26,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-glow2 {
+      position: absolute;
+      bottom: -100px;
+      left: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(240,146,26,0.1);
+      border: 1px solid rgba(240,146,26,0.3);
+      border-radius: 2px;
+      padding: 6px 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(52px, 6vw, 84px);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #f8fafc;
+      margin-bottom: 24px;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+      display: block;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 40px;
+      max-width: 480px;
+      font-weight: 300;
+    }
+
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #070b12;
+      border: none;
+      border-radius: 4px;
+      padding: 14px 32px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px 32px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hero-trust {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hero-trust-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* App mockup */
+    .hero-mockup {
+      position: relative;
+    }
+
+    .mockup-phone {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .mockup-header {
+      background: #0c1322;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mockup-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: #f8fafc;
+    }
+
+    .mockup-diamond {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      transform: rotate(45deg);
+    }
+
+    .mockup-btn {
+      background: var(--accent);
+      color: #070b12;
+      border: none;
+      border-radius: 12px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .mockup-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mockup-stat {
+      background: var(--surface);
+      padding: 12px 16px;
+    }
+
+    .mockup-stat-label {
+      color: var(--muted);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 3px;
+    }
+
+    .mockup-stat-value {
+      color: #f8fafc;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .mockup-cards {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mockup-card {
+      background: #0c1322;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      border-left: 3px solid;
+    }
+
+    .mockup-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 2px;
+      color: var(--text);
+    }
+
+    .mockup-card-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .mockup-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mockup-card-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--accent);
+    }
+
+    .mockup-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 40px 48px;
+    }
+
+    .stats-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .stat-item {
+      background: var(--surface);
+      padding: 32px 40px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 52px;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    /* FEATURES */
+    .features {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+    }
+
+    .section-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(36px, 4vw, 56px);
+      line-height: 1;
+      text-transform: uppercase;
+      color: #f8fafc;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 300;
+      max-width: 560px;
+      line-height: 1.6;
+      margin-bottom: 64px;
+    }
+
+    .features-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .feature-card {
+      background: var(--bg);
+      padding: 40px;
+      transition: background 0.2s;
+    }
+
+    .feature-card:hover { background: var(--surface); }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #f8fafc;
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .feature-tag {
+      display: inline-block;
+      margin-top: 16px;
+      background: rgba(240,146,26,0.1);
+      border: 1px solid rgba(240,146,26,0.2);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+
+    /* AI SECTION */
+    .ai-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .ai-glow {
+      position: absolute;
+      top: 50%;
+      right: -200px;
+      transform: translateY(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(240,146,26,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .ai-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .ai-estimator-preview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .ai-preview-header {
+      background: rgba(240,146,26,0.08);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .ai-preview-body {
+      padding: 20px;
+    }
+
+    .ai-result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ai-result-row:last-child { border-bottom: none; }
+
+    .ai-result-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ai-result-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--accent);
+    }
+
+    .ai-recommendation {
+      margin-top: 16px;
+      background: rgba(22,163,74,0.08);
+      border: 1px solid rgba(22,163,74,0.2);
+      border-radius: 8px;
+      padding: 14px;
+      color: #4ade80;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* PRICING */
+    .pricing {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+    }
+
+    .pricing-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      margin-top: 64px;
+    }
+
+    .pricing-card {
+      background: var(--bg);
+      padding: 40px;
+      position: relative;
+    }
+
+    .pricing-card.featured {
+      background: var(--surface);
+    }
+
+    .pricing-featured-label {
+      position: absolute;
+      top: -1px;
+      left: 40px;
+      background: var(--accent);
+      color: #070b12;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+    }
+
+    .pricing-tier {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .pricing-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      color: #f8fafc;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .pricing-price span {
+      font-size: 24px;
+      color: var(--muted);
+    }
+
+    .pricing-period {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pricing-features li:last-child { border-bottom: none; }
+
+    .pricing-check {
+      color: var(--accent);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* CTA */
+    .cta-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(240,146,26,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(40px, 5vw, 72px);
+      text-transform: uppercase;
+      line-height: 0.95;
+      color: #f8fafc;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .cta-title span { color: var(--accent); }
+
+    .cta-sub {
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 300;
+      margin-bottom: 48px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: 0.1em;
+      color: #f8fafc;
+      text-transform: uppercase;
+    }
+
+    .footer-copy {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-left > * {
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-eyebrow { animation-delay: 0.1s; }
+    .hero-title { animation-delay: 0.2s; }
+    .hero-sub { animation-delay: 0.3s; }
+    .hero-actions { animation-delay: 0.4s; }
+    .hero-trust { animation-delay: 0.5s; }
+
+    .hero-mockup {
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero { padding: 100px 20px 60px; }
+      .hero-content { grid-template-columns: 1fr; gap: 48px; }
+      .hero-mockup { display: none; }
+      .stats-bar { padding: 0; }
+      .stats-bar-inner { grid-template-columns: 1fr 1fr; }
+      .stat-item { padding: 24px 20px; }
+      .stat-number { font-size: 36px; }
+      .features { padding: 80px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .ai-section { padding: 80px 20px; }
+      .ai-inner { grid-template-columns: 1fr; }
+      .pricing { padding: 80px 20px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .cta-section { padding: 80px 20px; }
+      footer { padding: 32px 20px; flex-direction: column; gap: 16px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="nav-diamond"></div>
+      <span class="nav-wordmark">BidTrack</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#estimator">AI Estimator</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://bidtrack-seven.vercel.app" class="nav-cta">Start Free Trial</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-content">
+      <div class="hero-left">
+        <div class="hero-eyebrow">⬧ Built for Commercial Construction</div>
+        <h1 class="hero-title">
+          Stop<br>
+          <span>Underbidding.</span>
+          Start Winning.
+        </h1>
+        <p class="hero-sub">
+          BidTrack gives your team an <strong>AI-powered bid pipeline</strong> that tracks every lead, estimates true project costs, and tells you exactly what to bid — so you never leave money on the table again.
+        </p>
+        <div class="hero-actions">
+          <a href="https://bidtrack-seven.vercel.app" class="btn-primary">Start Free 14-Day Trial</a>
+          <a href="#features" class="btn-secondary">See How It Works</a>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-trust-dot"></div>
+          No credit card required &nbsp;·&nbsp; Live in 2 minutes &nbsp;·&nbsp; Cancel anytime
+        </div>
+      </div>
+      <div class="hero-mockup">
+        <div class="mockup-phone">
+          <div class="mockup-header">
+            <div class="mockup-logo">
+              <div class="mockup-diamond"></div>
+              BUILDTRACK
+            </div>
+            <div class="mockup-btn">+ Add Bid</div>
+          </div>
+          <div class="mockup-stats">
+            <div class="mockup-stat">
+              <div class="mockup-stat-label">Pipeline</div>
+              <div class="mockup-stat-value" style="color:#3b82f6">$4.2M</div>
+            </div>
+            <div class="mockup-stat">
+              <div class="mockup-stat-label">Won</div>
+              <div class="mockup-stat-value" style="color:#22c55e">$1.8M</div>
+            </div>
+            <div class="mockup-stat">
+              <div class="mockup-stat-label">Win Rate</div>
+              <div class="mockup-stat-value" style="color:#f59e0b">64%</div>
+            </div>
+            <div class="mockup-stat">
+              <div class="mockup-stat-label">Active Bids</div>
+              <div class="mockup-stat-value">12</div>
+            </div>
+          </div>
+          <div class="mockup-cards">
+            <div class="mockup-card" style="border-left-color: #3b82f6">
+              <div class="mockup-card-title">Riverside Office Complex</div>
+              <div class="mockup-card-sub">Meridian Developers</div>
+              <div class="mockup-card-bottom">
+                <span class="mockup-card-val">$2.4M</span>
+                <span class="mockup-badge" style="background:#0f1f3d;color:#3b82f6;border:1px solid #3b82f644">Bidding</span>
+              </div>
+            </div>
+            <div class="mockup-card" style="border-left-color: #22c55e">
+              <div class="mockup-card-title">Harbor Medical Annex</div>
+              <div class="mockup-card-sub">CityHealth Systems</div>
+              <div class="mockup-card-bottom">
+                <span class="mockup-card-val">$5.1M</span>
+                <span class="mockup-badge" style="background:#0d2218;color:#22c55e;border:1px solid #22c55e44">Won</span>
+              </div>
+            </div>
+            <div class="mockup-card" style="border-left-color: #f59e0b">
+              <div class="mockup-card-title">Lakeview Hotel Reno</div>
+              <div class="mockup-card-sub">Summit Hospitality</div>
+              <div class="mockup-card-bottom">
+                <span class="mockup-card-val">$1.65M</span>
+                <span class="mockup-badge" style="background:#2d1f00;color:#f59e0b;border:1px solid #f59e0b44">Qualified</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <div class="stat-number">$50K+</div>
+        <div class="stat-label">Average savings per underbid caught</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3×</div>
+        <div class="stat-label">More bids tracked vs. spreadsheets</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">14</div>
+        <div class="stat-label">Days free — no credit card needed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">2min</div>
+        <div class="stat-label">Setup time to first bid tracked</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div style="max-width:1200px;margin:0 auto">
+      <div class="section-eyebrow">⬧ Everything You Need</div>
+      <h2 class="section-title">Built for the field,<br>not the boardroom.</h2>
+      <p class="section-sub">Every feature was designed around how commercial contractors actually work — fast, mobile, and under pressure.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">📋</span>
+          <div class="feature-title">Bid Pipeline</div>
+          <p class="feature-desc">Track every bid from first contact to signed contract. Prospect, Qualify, Bid, Win — all in one place with urgent deadline alerts so nothing slips through.</p>
+          <span class="feature-tag">Core Feature</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🤖</span>
+          <div class="feature-title">AI Cost Estimator</div>
+          <p class="feature-desc">Enter project type, size, and ZIP code. Get back a full cost breakdown — materials, labor, overhead — plus a competitor price range and a specific bid recommendation.</p>
+          <span class="feature-tag">AI Powered</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📄</span>
+          <div class="feature-title">PDF Reports</div>
+          <p class="feature-desc">One tap generates a clean pipeline report with all active bids, stats, and contract values. Share with partners, lenders, or your team instantly.</p>
+          <span class="feature-tag">Export</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">👥</span>
+          <div class="feature-title">Multi-User Access</div>
+          <p class="feature-desc">Your whole team — estimators, project managers, executives — can log in and see the same live pipeline. No more emailing spreadsheets back and forth.</p>
+          <span class="feature-tag">Team</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📱</span>
+          <div class="feature-title">Mobile First</div>
+          <p class="feature-desc">Designed from the ground up for iPhone and Android. Add a bid on a job site, check your pipeline between meetings, update stages from anywhere.</p>
+          <span class="feature-tag">Mobile</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📊</span>
+          <div class="feature-title">Stats Dashboard</div>
+          <p class="feature-desc">Weighted pipeline value, win rate, revenue won, stage breakdown — always visible. Know exactly where your business stands at a glance.</p>
+          <span class="feature-tag">Analytics</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI SECTION -->
+  <section class="ai-section" id="estimator">
+    <div class="ai-glow"></div>
+    <div class="ai-inner">
+      <div>
+        <div class="section-eyebrow">⬧ Stop the Guesswork</div>
+        <h2 class="section-title">Bid with<br><span style="color:var(--accent)">confidence.</span></h2>
+        <p class="section-sub" style="margin-bottom:32px">The #1 reason commercial contractors lose money is underbidding. BidTrack's AI estimator uses current regional market data to give you a real cost range — so you bid to win AND to profit.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:16px">
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--accent);font-size:18px;flex-shrink:0">⬧</span>
+            <span style="color:var(--muted);font-size:15px;line-height:1.5">Input project type, square footage, ZIP code, quality level</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--accent);font-size:18px;flex-shrink:0">⬧</span>
+            <span style="color:var(--muted);font-size:15px;line-height:1.5">Get materials, labor & overhead breakdown with low/mid/high range</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--accent);font-size:18px;flex-shrink:0">⬧</span>
+            <span style="color:var(--muted);font-size:15px;line-height:1.5">See competitor price ranges in your local market</span>
+          </li>
+          <li style="display:flex;gap:12px;align-items:flex-start">
+            <span style="color:var(--accent);font-size:18px;flex-shrink:0">⬧</span>
+            <span style="color:var(--muted);font-size:15px;line-height:1.5">Get a specific bid recommendation with risk warnings</span>
+          </li>
+        </ul>
+      </div>
+      <div class="ai-estimator-preview">
+        <div class="ai-preview-header">
+          🤖 &nbsp;AI Cost Estimator — Office · 15,000 sqft · ZIP 33410
+        </div>
+        <div class="ai-preview-body">
+          <div class="ai-result-row">
+            <span class="ai-result-label">Low Estimate</span>
+            <span class="ai-result-value" style="color:#ef4444">$1.87M</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">Mid Estimate</span>
+            <span class="ai-result-value">$2.24M</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">High Estimate</span>
+            <span class="ai-result-value" style="color:#22c55e">$2.71M</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">🧱 Materials</span>
+            <span class="ai-result-value" style="font-size:15px">$980K</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">👷 Labor</span>
+            <span class="ai-result-value" style="font-size:15px">$840K</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">📋 Overhead & Profit</span>
+            <span class="ai-result-value" style="font-size:15px">$420K</span>
+          </div>
+          <div class="ai-result-row">
+            <span class="ai-result-label">Competitor Range</span>
+            <span style="color:#3b82f6;font-size:13px;font-weight:600">$118–$148/sqft regional</span>
+          </div>
+          <div class="ai-recommendation">
+            💡 <strong>Bid Recommendation:</strong> Submit at $2.18M–$2.35M to remain competitive in the Palm Beach market while maintaining healthy margin.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="pricing-inner">
+      <div class="section-eyebrow">⬧ Simple Pricing</div>
+      <h2 class="section-title">One job won<br>pays for years.</h2>
+      <p class="section-sub">No per-seat fees. No hidden costs. One flat rate for your whole company.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-tier">Starter</div>
+          <div class="pricing-price">Free<span></span></div>
+          <div class="pricing-period">14-day trial — no card required</div>
+          <ul class="pricing-features">
+            <li><span class="pricing-check">⬧</span> Full bid pipeline</li>
+            <li><span class="pricing-check">⬧</span> AI cost estimator (10 uses)</li>
+            <li><span class="pricing-check">⬧</span> Up to 3 team members</li>
+            <li><span class="pricing-check">⬧</span> PDF export</li>
+            <li><span class="pricing-check">⬧</span> Mobile app</li>
+          </ul>
+          <a href="https://bidtrack-seven.vercel.app" class="btn-secondary" style="width:100%;text-align:center;display:block">Start Free Trial</a>
+        </div>
+        <div class="pricing-card featured">
+          <div class="pricing-featured-label">Most Popular</div>
+          <div class="pricing-tier">Pro</div>
+          <div class="pricing-price">$79<span>/mo</span></div>
+          <div class="pricing-period">Per company · billed monthly</div>
+          <ul class="pricing-features">
+            <li><span class="pricing-check">⬧</span> Everything in Starter</li>
+            <li><span class="pricing-check">⬧</span> Unlimited AI estimates</li>
+            <li><span class="pricing-check">⬧</span> Unlimited team members</li>
+            <li><span class="pricing-check">⬧</span> Priority support</li>
+            <li><span class="pricing-check">⬧</span> Custom company branding</li>
+          </ul>
+          <a href="https://bidtrack-seven.vercel.app" class="btn-primary" style="width:100%;text-align:center;display:block">Get Started</a>
+        </div>
+        <div class="pricing-card">
+          <div class="pricing-tier">Annual</div>
+          <div class="pricing-price">$699<span>/yr</span></div>
+          <div class="pricing-period">Save $249 vs monthly</div>
+          <ul class="pricing-features">
+            <li><span class="pricing-check">⬧</span> Everything in Pro</li>
+            <li><span class="pricing-check">⬧</span> 2 months free</li>
+            <li><span class="pricing-check">⬧</span> Onboarding call included</li>
+            <li><span class="pricing-check">⬧</span> Dedicated account support</li>
+            <li><span class="pricing-check">⬧</span> Early access to new features</li>
+          </ul>
+          <a href="https://bidtrack-seven.vercel.app" class="btn-secondary" style="width:100%;text-align:center;display:block">Get Annual Plan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <h2 class="cta-title">Ready to win<br><span>more contracts?</span></h2>
+    <p class="cta-sub">Join commercial construction companies already using BidTrack to track bids, estimate smarter, and close more deals.</p>
+    <a href="https://bidtrack-seven.vercel.app" class="btn-primary" style="font-size:18px;padding:18px 48px">Start Your Free Trial →</a>
+    <div class="hero-trust" style="justify-content:center;margin-top:24px">
+      <div class="hero-trust-dot"></div>
+      14 days free &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Cancel anytime
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <div class="nav-diamond"></div>
+      BidTrack
+    </div>
+    <div class="footer-copy">© 2026 BidTrack. All rights reserved.</div>
+  </footer>
+
+</body>
+</html>

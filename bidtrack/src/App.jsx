@@ -29,9 +29,10 @@ function daysUntil(d) { return Math.ceil((new Date(d) - new Date()) / 86400000);
 // ─── Global Styles ───────────────────────────────────────────
 const GlobalStyle = () => (
   <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&display=swap');
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; padding: 0; background: #080c14; overscroll-behavior: none; }
-    input, select, textarea { font-size: 16px !important; }
+    body { margin: 0; padding: 0; background: #070b12; overscroll-behavior: none; font-family: 'Barlow', sans-serif; }
+    input, select, textarea { font-size: 16px !important; font-family: 'Barlow', sans-serif; }
     ::-webkit-scrollbar { display: none; }
     @media print { .no-print { display: none !important; } }
   `}</style>
@@ -49,9 +50,9 @@ function Badge({ stage }) {
 
 // ─── Colors ──────────────────────────────────────────────────
 const C = {
-  bg: "#080c14", surface: "#0d1526", border: "#1e2d4a",
-  text: "#e2e8f0", muted: "#64748b", dim: "#334155",
-  accent: "#f59e0b", blue: "#3b82f6", green: "#22c55e", red: "#ef4444",
+  bg: "#070b12", surface: "#0c1322", border: "#1a2a42",
+  text: "#e2e8f0", muted: "#5a7090", dim: "#2a3a52",
+  accent: "#f0921a", blue: "#2563eb", green: "#16a34a", red: "#ef4444",
 };
 const inputStyle = { width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: C.text, fontSize: 16, outline: "none" };
 const labelStyle = { color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
@@ -81,7 +82,7 @@ function exportPDF(leads) {
     .badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     .footer { margin-top: 40px; color: #94a3b8; font-size: 11px; text-align: center; }
   </style></head><body>
-  <h1>⬧ BUILDTRACK</h1>
+  <h1>⬧ BIDTRACK</h1>
   <div class="sub">Pipeline Report · Generated ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
   <div class="stats">
     <div class="stat"><div class="stat-label">Weighted Pipeline</div><div class="stat-value">${fmt(pipeline)}</div></div>
@@ -146,9 +147,9 @@ Using your knowledge of current construction costs in that region, provide a det
   "recommendation": "<one sentence on what to bid to win without underbidding>"
 }`;
 
-      const res = await fetch("/api/estimate", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
@@ -156,12 +157,9 @@ Using your knowledge of current construction costs in that region, provide a det
         })
       });
       const data = await res.json();
-console.log("API response:", JSON.stringify(data));
-const text = data.content?.find(b => b.type === "text")?.text || "";
-console.log("Text:", text);
-const clean = text.replace(/```json|```/g, "").trim();
-console.log("Clean:", clean);
-const parsed = JSON.parse(clean);
+      const text = data.content?.find(b => b.type === "text")?.text || "";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
       setResult({ ...parsed, form: { ...form } });
     } catch (e) {
       setError("Estimation failed. Check your connection and try again.");
@@ -294,16 +292,16 @@ function AuthScreen({ onAuth }) {
     <div style={{ minHeight: "100dvh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 10, height: 10, background: C.accent, borderRadius: 2, transform: "rotate(45deg)" }} />
-            <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: "0.1em", color: "#f8fafc" }}>BUILDTRACK</span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{ width: 10, height: 10, background: C.accent, borderRadius: 2, transform: "rotate(45deg)", flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 28, letterSpacing: "0.12em", color: "#f8fafc", textTransform: "uppercase" }}>BIDTRACK</span>
           </div>
-          <div style={{ color: C.muted, fontSize: 13 }}>Commercial Bid Pipeline</div>
+          <div style={{ color: C.muted, fontSize: 13, fontWeight: 300, letterSpacing: "0.04em" }}>Commercial Bid Pipeline</div>
         </div>
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
           <div style={{ display: "flex", marginBottom: 24, background: C.bg, borderRadius: 8, padding: 3 }}>
             {["login", "signup"].map(m => (
-              <button key={m} onClick={() => setMode(m)} style={{ flex: 1, background: mode === m ? C.surface : "transparent", color: mode === m ? C.text : C.muted, border: "none", borderRadius: 6, padding: "8px", fontWeight: mode === m ? 700 : 400, fontSize: 13, cursor: "pointer" }}>
+              <button key={m} onClick={() => setMode(m)} style={{ flex: 1, background: mode === m ? C.surface : "transparent", color: mode === m ? C.text : C.muted, border: "none", borderRadius: 6, padding: "8px", fontWeight: mode === m ? 700 : 400, fontSize: 13, cursor: "pointer", fontFamily: "'Barlow', sans-serif" }}>
                 {m === "login" ? "Log In" : "Sign Up"}
               </button>
             ))}
@@ -314,7 +312,7 @@ function AuthScreen({ onAuth }) {
           </div>
           {error && <div style={{ color: C.red, fontSize: 12, marginTop: 10 }}>{error}</div>}
           {success && <div style={{ color: C.green, fontSize: 12, marginTop: 10 }}>{success}</div>}
-          <button onClick={handleAuth} disabled={loading} style={{ width: "100%", background: C.accent, color: "#080c14", border: "none", borderRadius: 10, padding: 14, fontWeight: 800, fontSize: 15, cursor: "pointer", marginTop: 16 }}>
+          <button onClick={handleAuth} disabled={loading} style={{ width: "100%", background: C.accent, color: "#070b12", border: "none", borderRadius: 10, padding: 14, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: 16, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", marginTop: 16 }}>
             {loading ? "..." : mode === "login" ? "Log In →" : "Create Account →"}
           </button>
         </div>
@@ -395,9 +393,16 @@ export default function BidPipeline() {
   }
 
   if (authLoading) return (
-    <div style={{ minHeight: "100dvh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ color: C.muted, fontSize: 14 }}>Loading...</div>
-    </div>
+    <>
+      <GlobalStyle />
+      <div style={{ minHeight: "100dvh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 10, height: 10, background: C.accent, borderRadius: 2, transform: "rotate(45deg)" }} />
+          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 24, letterSpacing: "0.12em", color: "#f8fafc", textTransform: "uppercase" }}>BIDTRACK</span>
+        </div>
+        <div style={{ color: C.muted, fontSize: 13, fontWeight: 300 }}>Loading...</div>
+      </div>
+    </>
   );
 
   if (!session) return <><GlobalStyle /><AuthScreen onAuth={setSession} /></>;
@@ -412,19 +417,19 @@ export default function BidPipeline() {
   return (
     <>
       <GlobalStyle />
-      <div style={{ minHeight: "100dvh", background: C.bg, color: C.text, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", display: "flex", flexDirection: "column", maxWidth: 600, margin: "0 auto" }}>
+      <div style={{ minHeight: "100dvh", background: C.bg, color: C.text, fontFamily: "'Barlow', sans-serif", display: "flex", flexDirection: "column", maxWidth: 600, margin: "0 auto" }}>
 
         {/* Header */}
         <div className="no-print" style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 8, height: 8, background: C.accent, borderRadius: 2, transform: "rotate(45deg)" }} />
-            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.08em", color: "#f8fafc" }}>BUILDTRACK</span>
+            <div style={{ width: 8, height: 8, background: C.accent, borderRadius: 2, transform: "rotate(45deg)", flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 18, letterSpacing: "0.12em", color: "#f8fafc", textTransform: "uppercase" }}>BIDTRACK</span>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button onClick={() => exportPDF(leads)} style={{ background: "transparent", color: C.muted, border: `1px solid ${C.border}`, borderRadius: 20, padding: "6px 12px", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>
               📄 Export
             </button>
-            <button onClick={() => setShowAdd(true)} style={{ background: C.accent, color: "#080c14", border: "none", borderRadius: 20, padding: "7px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+            <button onClick={() => setShowAdd(true)} style={{ background: C.accent, color: "#070b12", border: "none", borderRadius: 20, padding: "7px 14px", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: 13, letterSpacing: "0.06em", cursor: "pointer" }}>
               + Add Bid
             </button>
           </div>
