@@ -6,30 +6,27 @@ function loadLeads() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 const STAGE_CONFIG = {
-  Prospect:  { color: "#94a3b8", bg: "#1e293b", dot: "#64748b" },
-  Qualified: { color: "#f59e0b", bg: "#2d1f00", dot: "#f59e0b" },
-  Bidding:   { color: "#3b82f6", bg: "#0f1f3d", dot: "#3b82f6" },
-  Won:       { color: "#22c55e", bg: "#0d2218", dot: "#22c55e" },
-  Lost:      { color: "#ef4444", bg: "#2d0f0f", dot: "#ef4444" },
+  Prospect:  { color: "#94a3b8", bg: "#1e293b" },
+  Qualified: { color: "#f59e0b", bg: "#2d1f00" },
+  Bidding:   { color: "#3b82f6", bg: "#0f1f3d" },
+  Won:       { color: "#22c55e", bg: "#0d2218" },
+  Lost:      { color: "#ef4444", bg: "#2d0f0f" },
 };
 
 const STAGES = ["Prospect", "Qualified", "Bidding", "Won", "Lost"];
 
 function fmt(n) {
-  if (n >= 1000000) return `$${(n/1000000).toFixed(1)}M`;
-  if (n >= 1000) return `$${(n/1000).toFixed(0)}K`;
+  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `$${(n / 1000).toFixed(0)}K`;
   return `$${n}`;
 }
 
 function daysUntil(dateStr) {
-  const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
-  return diff;
+  return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
 }
 
 function Badge({ stage }) {
@@ -37,288 +34,293 @@ function Badge({ stage }) {
   return (
     <span style={{
       background: c.bg, color: c.color,
-      border: `1px solid ${c.color}33`,
-      borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600,
-      letterSpacing: "0.05em", textTransform: "uppercase"
+      border: `1px solid ${c.color}44`,
+      borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: 700,
+      letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap"
     }}>{stage}</span>
   );
 }
 
+const GlobalStyle = () => (
+  <style>{`
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; background: #080c14; overscroll-behavior: none; }
+    input, select { font-size: 16px !important; }
+    ::-webkit-scrollbar { display: none; }
+  `}</style>
+);
+
 export default function BidPipeline() {
   const [leads, setLeads] = useState(() => loadLeads());
-  const [filter, setFilter] = useState("All");
-  const [view, setView] = useState("pipeline"); // pipeline | kanban
-  const [showAdd, setShowAdd] = useState(false);
+  const [tab, setTab] = useState("leads");
+  const [stageFilter, setStageFilter] = useState("All");
   const [selected, setSelected] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
   const [newLead, setNewLead] = useState({ project: "", client: "", value: "", type: "Office", stage: "Prospect", dueDate: "", contact: "", winProb: 30 });
 
-  // Save to localStorage whenever leads change
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(leads));
-    } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(leads)); } catch {}
   }, [leads]);
 
-  const types = ["All", ...Array.from(new Set(leads.map(l => l.type)))];
-  const filtered = filter === "All" ? leads : leads.filter(l => l.type === filter);
-
-  const activeLeads = leads.filter(l => !["Won","Lost"].includes(l.stage));
+  const activeLeads = leads.filter(l => !["Won", "Lost"].includes(l.stage));
   const pipeline = activeLeads.reduce((s, l) => s + l.value * l.winProb / 100, 0);
   const won = leads.filter(l => l.stage === "Won").reduce((s, l) => s + l.value, 0);
-  const winRate = leads.filter(l => ["Won","Lost"].includes(l.stage)).length > 0
-    ? Math.round(leads.filter(l => l.stage === "Won").length / leads.filter(l => ["Won","Lost"].includes(l.stage)).length * 100)
-    : 0;
+  const closedCount = leads.filter(l => ["Won", "Lost"].includes(l.stage)).length;
+  const winRate = closedCount > 0 ? Math.round(leads.filter(l => l.stage === "Won").length / closedCount * 100) : 0;
+  const filtered = stageFilter === "All" ? leads : leads.filter(l => l.stage === stageFilter);
 
   function addLead() {
     if (!newLead.project || !newLead.client) return;
-    setLeads(prev => [...prev, { ...newLead, id: Date.now(), value: parseFloat(newLead.value)||0, winProb: parseInt(newLead.winProb)||30, lastTouch: new Date().toISOString().slice(0,10) }]);
+    setLeads(prev => [...prev, {
+      ...newLead, id: Date.now(),
+      value: parseFloat(newLead.value) || 0,
+      winProb: parseInt(newLead.winProb) || 30,
+      lastTouch: new Date().toISOString().slice(0, 10)
+    }]);
     setNewLead({ project: "", client: "", value: "", type: "Office", stage: "Prospect", dueDate: "", contact: "", winProb: 30 });
     setShowAdd(false);
+    setTab("leads");
   }
 
   function moveStage(id, stage) {
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, stage, winProb: stage === "Won" ? 100 : stage === "Lost" ? 0 : l.winProb } : l));
+    setLeads(prev => prev.map(l => l.id === id
+      ? { ...l, stage, winProb: stage === "Won" ? 100 : stage === "Lost" ? 0 : l.winProb }
+      : l));
     setSelected(prev => prev?.id === id ? { ...prev, stage } : prev);
   }
 
-  const styles = {
-    app: { minHeight: "100vh", background: "#080c14", color: "#e2e8f0", fontFamily: "'DM Mono', 'Fira Code', monospace", fontSize: 13 },
-    header: { background: "#0d1526", borderBottom: "1px solid #1e2d4a", padding: "0 28px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 },
-    logo: { color: "#f8fafc", fontWeight: 700, fontSize: 15, letterSpacing: "0.12em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: 10 },
-    logoAccent: { width: 8, height: 8, background: "#f59e0b", borderRadius: 2, transform: "rotate(45deg)" },
-    statsBar: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: "#0d1526", borderBottom: "1px solid #1e2d4a" },
-    stat: { padding: "16px 28px", borderRight: "1px solid #1e2d4a" },
-    statLabel: { color: "#64748b", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 },
-    statValue: { color: "#f8fafc", fontSize: 22, fontWeight: 700 },
-    statSub: { color: "#64748b", fontSize: 11, marginTop: 2 },
-    toolbar: { display: "flex", alignItems: "center", gap: 8, padding: "12px 28px", borderBottom: "1px solid #1e2d4a", background: "#080c14" },
-    filterBtn: (active) => ({ background: active ? "#1e3a5f" : "transparent", color: active ? "#60a5fa" : "#64748b", border: `1px solid ${active ? "#3b82f6" : "#1e2d4a"}`, borderRadius: 4, padding: "4px 12px", cursor: "pointer", fontSize: 11, letterSpacing: "0.05em" }),
-    viewBtn: (active) => ({ background: active ? "#f59e0b22" : "transparent", color: active ? "#f59e0b" : "#64748b", border: `1px solid ${active ? "#f59e0b" : "#1e2d4a"}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 11 }),
-    addBtn: { marginLeft: "auto", background: "#f59e0b", color: "#080c14", border: "none", borderRadius: 4, padding: "5px 14px", cursor: "pointer", fontWeight: 700, fontSize: 11, letterSpacing: "0.05em" },
-    table: { width: "100%", borderCollapse: "collapse" },
-    th: { textAlign: "left", color: "#475569", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", padding: "8px 28px", borderBottom: "1px solid #1e2d4a", fontWeight: 500 },
-    row: (urgent) => ({ borderBottom: "1px solid #0f1726", cursor: "pointer", background: urgent ? "#1a0f00" : "transparent", transition: "background 0.15s" }),
-    td: { padding: "11px 28px", verticalAlign: "middle" },
-    proj: { color: "#e2e8f0", fontWeight: 600, fontSize: 13, marginBottom: 2 },
-    client: { color: "#64748b", fontSize: 11 },
-    kanban: { display: "flex", gap: 12, padding: "20px 28px", overflowX: "auto" },
-    col: { minWidth: 220, flex: 1 },
-    colHead: (stage) => ({ background: STAGE_CONFIG[stage]?.bg || "#1e293b", borderRadius: "6px 6px 0 0", padding: "8px 12px", borderBottom: `2px solid ${STAGE_CONFIG[stage]?.color || "#475569"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }),
-    colTitle: (stage) => ({ color: STAGE_CONFIG[stage]?.color || "#e2e8f0", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase" }),
-    card: { background: "#0d1526", border: "1px solid #1e2d4a", borderRadius: "0 0 6px 6px", marginBottom: 8, padding: 12, cursor: "pointer" },
-    cardProj: { color: "#e2e8f0", fontWeight: 600, fontSize: 12, marginBottom: 4 },
-    cardVal: { color: "#f59e0b", fontWeight: 700, fontSize: 14 },
-    modal: { position: "fixed", inset: 0, background: "#00000088", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 },
-    modalBox: { background: "#0d1526", border: "1px solid #1e2d4a", borderRadius: 8, padding: 28, width: 480, maxWidth: "90vw" },
-    modalTitle: { color: "#f8fafc", fontWeight: 700, fontSize: 16, marginBottom: 20 },
-    label: { color: "#64748b", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4, display: "block" },
-    input: { width: "100%", background: "#080c14", border: "1px solid #1e2d4a", borderRadius: 4, padding: "7px 10px", color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" },
-    row2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-    saveBtn: { background: "#f59e0b", color: "#080c14", border: "none", borderRadius: 4, padding: "8px 20px", fontWeight: 700, fontSize: 12, cursor: "pointer", marginTop: 16 },
-    cancelBtn: { background: "transparent", color: "#64748b", border: "1px solid #1e2d4a", borderRadius: 4, padding: "8px 16px", fontSize: 12, cursor: "pointer", marginTop: 16, marginLeft: 8 },
+  function deleteLead(id) {
+    setLeads(prev => prev.filter(l => l.id !== id));
+    setSelected(null);
+  }
+
+  const C = {
+    bg: "#080c14", surface: "#0d1526", border: "#1e2d4a",
+    text: "#e2e8f0", muted: "#64748b", dim: "#334155",
+    accent: "#f59e0b", blue: "#3b82f6", green: "#22c55e", red: "#ef4444",
   };
 
-  const urgentDays = 5;
+  const inputStyle = { width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", color: C.text, fontSize: 16, outline: "none" };
+  const labelStyle = { color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
 
   return (
-    <div style={styles.app}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.logo}>
-          <div style={styles.logoAccent} />
-          BUILDTRACK
-          <span style={{ color: "#334155", fontWeight: 400, fontSize: 11 }}>/ Commercial Bid Pipeline</span>
-        </div>
-        <span style={{ color: "#334155", fontSize: 11 }}>FY 2026</span>
-      </div>
+    <>
+      <GlobalStyle />
+      <div style={{ minHeight: "100dvh", background: C.bg, color: C.text, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", display: "flex", flexDirection: "column", maxWidth: 600, margin: "0 auto" }}>
 
-      {/* Stats */}
-      <div style={styles.statsBar}>
-        {[
-          { label: "Weighted Pipeline", value: fmt(pipeline), sub: `${activeLeads.length} active bids` },
-          { label: "Revenue Won", value: fmt(won), sub: "closed deals" },
-          { label: "Win Rate", value: `${winRate}%`, sub: "closed bids" },
-          { label: "Avg Deal Size", value: fmt(leads.reduce((s,l)=>s+l.value,0)/leads.length), sub: "across all stages" },
-        ].map((s, i) => (
-          <div key={i} style={styles.stat}>
-            <div style={styles.statLabel}>{s.label}</div>
-            <div style={styles.statValue}>{s.value}</div>
-            <div style={styles.statSub}>{s.sub}</div>
+        {/* Header */}
+        <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 8, height: 8, background: C.accent, borderRadius: 2, transform: "rotate(45deg)" }} />
+            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.08em", color: "#f8fafc" }}>BUILDTRACK</span>
           </div>
-        ))}
-      </div>
+          <button onClick={() => setShowAdd(true)} style={{ background: C.accent, color: "#080c14", border: "none", borderRadius: 20, padding: "7px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+            + Add Bid
+          </button>
+        </div>
 
-      {/* Toolbar */}
-      <div style={styles.toolbar}>
-        {types.map(t => <button key={t} style={styles.filterBtn(filter===t)} onClick={() => setFilter(t)}>{t}</button>)}
-        <div style={{ width: 1, height: 20, background: "#1e2d4a", margin: "0 4px" }} />
-        <button style={styles.viewBtn(view==="pipeline")} onClick={() => setView("pipeline")}>List</button>
-        <button style={styles.viewBtn(view==="kanban")} onClick={() => setView("kanban")}>Kanban</button>
-        <button style={styles.addBtn} onClick={() => setShowAdd(true)}>+ Add Lead</button>
-      </div>
+        {/* Scrollable Content */}
+        <div style={{ flex: 1, overflowY: "auto", paddingBottom: 72 }}>
 
-      {/* Pipeline Table */}
-      {view === "pipeline" && (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              {["Project / Client","Type","Stage","Value","Win %","Due Date","Contact","Last Touch"].map(h => (
-                <th key={h} style={styles.th}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={8} style={{ padding: "60px 28px", textAlign: "center", color: "#334155" }}>
-                  <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-                  <div style={{ color: "#475569", fontSize: 14, marginBottom: 6 }}>No leads yet</div>
-                  <div style={{ color: "#334155", fontSize: 12 }}>Click "+ Add Lead" to add your first bid</div>
-                </td>
-              </tr>
-            )}
-            {filtered.map(lead => {
-              const days = daysUntil(lead.dueDate);
-              const urgent = days >= 0 && days <= urgentDays && !["Won","Lost"].includes(lead.stage);
-              return (
-                <tr key={lead.id} style={styles.row(urgent)} onClick={() => setSelected(lead)}
-                  onMouseEnter={e => e.currentTarget.style.background = "#0d1526"}
-                  onMouseLeave={e => e.currentTarget.style.background = urgent ? "#1a0f00" : "transparent"}>
-                  <td style={styles.td}>
-                    <div style={styles.proj}>{lead.project}</div>
-                    <div style={styles.client}>{lead.client}</div>
-                  </td>
-                  <td style={styles.td}><span style={{ color: "#64748b", fontSize: 11 }}>{lead.type}</span></td>
-                  <td style={styles.td}><Badge stage={lead.stage} /></td>
-                  <td style={styles.td}><span style={{ color: "#f59e0b", fontWeight: 700 }}>{fmt(lead.value)}</span></td>
-                  <td style={styles.td}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ width: 48, height: 4, background: "#1e2d4a", borderRadius: 2, overflow: "hidden" }}>
-                        <div style={{ width: `${lead.winProb}%`, height: "100%", background: lead.winProb > 70 ? "#22c55e" : lead.winProb > 40 ? "#f59e0b" : "#ef4444", borderRadius: 2 }} />
+          {/* LEADS TAB */}
+          {tab === "leads" && (
+            <div>
+              <div style={{ display: "flex", gap: 8, padding: "12px 16px", overflowX: "auto", borderBottom: `1px solid ${C.border}` }}>
+                {["All", ...STAGES].map(s => {
+                  const active = stageFilter === s;
+                  const col = s === "All" ? C.blue : STAGE_CONFIG[s]?.color;
+                  return (
+                    <button key={s} onClick={() => setStageFilter(s)} style={{
+                      background: active ? `${col}22` : "transparent",
+                      color: active ? col : C.muted,
+                      border: `1px solid ${active ? col : C.border}`,
+                      borderRadius: 20, padding: "5px 12px", fontSize: 12,
+                      fontWeight: active ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0
+                    }}>{s}</button>
+                  );
+                })}
+              </div>
+
+              <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {filtered.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: C.muted }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+                    <div style={{ fontSize: 15, marginBottom: 6, color: C.text }}>No bids yet</div>
+                    <div style={{ fontSize: 13 }}>Tap "+ Add Bid" to get started</div>
+                  </div>
+                )}
+                {filtered.map(lead => {
+                  const days = daysUntil(lead.dueDate);
+                  const urgent = days >= 0 && days <= 5 && !["Won", "Lost"].includes(lead.stage);
+                  return (
+                    <div key={lead.id} onClick={() => setSelected(lead)} style={{
+                      background: C.surface, border: `1px solid ${urgent ? C.accent + "66" : C.border}`,
+                      borderRadius: 12, padding: 16, cursor: "pointer",
+                      borderLeft: `3px solid ${STAGE_CONFIG[lead.stage]?.color || C.muted}`
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                        <div style={{ flex: 1, marginRight: 10 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 3, lineHeight: 1.3 }}>{lead.project}</div>
+                          <div style={{ color: C.muted, fontSize: 12 }}>{lead.client}</div>
+                        </div>
+                        <Badge stage={lead.stage} />
                       </div>
-                      <span style={{ color: "#94a3b8", fontSize: 11 }}>{lead.winProb}%</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ color: C.accent, fontWeight: 800, fontSize: 20 }}>{fmt(lead.value)}</span>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                          {lead.dueDate && (
+                            <span style={{ color: urgent ? C.accent : C.muted, fontSize: 12, fontWeight: urgent ? 700 : 400 }}>
+                              {urgent ? `⚠️ ${days}d left` : lead.dueDate}
+                            </span>
+                          )}
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <div style={{ width: 32, height: 3, background: C.border, borderRadius: 2, overflow: "hidden" }}>
+                              <div style={{ width: `${lead.winProb}%`, height: "100%", background: lead.winProb > 70 ? C.green : lead.winProb > 40 ? C.accent : C.red, borderRadius: 2 }} />
+                            </div>
+                            <span style={{ color: C.muted, fontSize: 11 }}>{lead.winProb}%</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={{ color: urgent ? "#f59e0b" : "#64748b", fontSize: 11, fontWeight: urgent ? 700 : 400 }}>
-                      {lead.dueDate} {urgent ? `(${days}d!)` : ""}
-                    </span>
-                  </td>
-                  <td style={styles.td}><span style={{ color: "#94a3b8", fontSize: 11 }}>{lead.contact}</span></td>
-                  <td style={styles.td}><span style={{ color: "#475569", fontSize: 11 }}>{lead.lastTouch}</span></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-      {/* Kanban */}
-      {view === "kanban" && (
-        <div style={styles.kanban}>
-          {STAGES.map(stage => {
-            const cards = filtered.filter(l => l.stage === stage);
-            return (
-              <div key={stage} style={styles.col}>
-                <div style={styles.colHead(stage)}>
-                  <span style={styles.colTitle(stage)}>{stage}</span>
-                  <span style={{ color: "#475569", fontSize: 11 }}>{cards.length}</span>
-                </div>
-                {cards.map(lead => (
-                  <div key={lead.id} style={styles.card} onClick={() => setSelected(lead)}>
-                    <div style={styles.cardProj}>{lead.project}</div>
-                    <div style={{ color: "#475569", fontSize: 11, marginBottom: 6 }}>{lead.client}</div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={styles.cardVal}>{fmt(lead.value)}</span>
-                      <span style={{ color: "#475569", fontSize: 11 }}>{lead.winProb}%</span>
-                    </div>
+          {/* STATS TAB */}
+          {tab === "stats" && (
+            <div style={{ padding: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                {[
+                  { label: "Pipeline", value: fmt(pipeline), sub: `${activeLeads.length} active`, color: C.blue },
+                  { label: "Won", value: fmt(won), sub: `${leads.filter(l => l.stage === "Won").length} deals`, color: C.green },
+                  { label: "Win Rate", value: `${winRate}%`, sub: `${closedCount} closed`, color: C.accent },
+                  { label: "Total Bids", value: leads.length, sub: "all time", color: C.muted },
+                ].map((s, i) => (
+                  <div key={i} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16 }}>
+                    <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{s.label}</div>
+                    <div style={{ color: s.color, fontSize: 26, fontWeight: 800, marginBottom: 2 }}>{s.value}</div>
+                    <div style={{ color: C.dim, fontSize: 12 }}>{s.sub}</div>
                   </div>
                 ))}
-                {cards.length === 0 && <div style={{ ...styles.card, color: "#334155", textAlign: "center", fontSize: 11 }}>No bids</div>}
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Detail Modal */}
-      {selected && (
-        <div style={styles.modal} onClick={() => setSelected(null)}>
-          <div style={styles.modalBox} onClick={e => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-              <div>
-                <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 16 }}>{selected.project}</div>
-                <div style={{ color: "#64748b", fontSize: 12, marginTop: 2 }}>{selected.client} · {selected.type}</div>
+              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16 }}>
+                <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>By Stage</div>
+                {STAGES.map(stage => {
+                  const count = leads.filter(l => l.stage === stage).length;
+                  const val = leads.filter(l => l.stage === stage).reduce((s, l) => s + l.value, 0);
+                  const pct = leads.length > 0 ? count / leads.length : 0;
+                  const col = STAGE_CONFIG[stage].color;
+                  return (
+                    <div key={stage} style={{ marginBottom: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                        <span style={{ color: col, fontSize: 13, fontWeight: 600 }}>{stage}</span>
+                        <span style={{ color: C.muted, fontSize: 12 }}>{count} · {fmt(val)}</span>
+                      </div>
+                      <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${pct * 100}%`, height: "100%", background: col, borderRadius: 2 }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <Badge stage={selected.stage} />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-              {[
-                ["Contract Value", fmt(selected.value)],
-                ["Win Probability", `${selected.winProb}%`],
-                ["Due Date", selected.dueDate],
-                ["Key Contact", selected.contact],
-              ].map(([l, v]) => (
-                <div key={l} style={{ background: "#080c14", borderRadius: 6, padding: 12, border: "1px solid #1e2d4a" }}>
-                  <div style={{ color: "#475569", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{l}</div>
-                  <div style={{ color: "#f59e0b", fontWeight: 700 }}>{v}</div>
+          )}
+        </div>
+
+        {/* Bottom Nav */}
+        <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 600, background: C.surface, borderTop: `1px solid ${C.border}`, display: "flex", zIndex: 50, paddingBottom: "env(safe-area-inset-bottom)" }}>
+          {[{ id: "leads", icon: "📋", label: "Bids" }, { id: "stats", icon: "📊", label: "Stats" }].map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, background: "transparent", border: "none", padding: "10px 0", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 20 }}>{t.icon}</span>
+              <span style={{ fontSize: 11, color: tab === t.id ? C.accent : C.muted, fontWeight: tab === t.id ? 700 : 400 }}>{t.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Detail Bottom Sheet */}
+        {selected && (
+          <div style={{ position: "fixed", inset: 0, background: "#000000bb", zIndex: 100, display: "flex", alignItems: "flex-end" }} onClick={() => setSelected(null)}>
+            <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: "20px 20px 0 0", padding: 24, width: "100%", maxWidth: 600, margin: "0 auto", maxHeight: "85vh", overflowY: "auto", paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}>
+              <div style={{ width: 36, height: 4, background: C.border, borderRadius: 2, margin: "0 auto 20px" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                <div style={{ flex: 1, marginRight: 12 }}>
+                  <div style={{ fontWeight: 800, fontSize: 18, lineHeight: 1.3, marginBottom: 4 }}>{selected.project}</div>
+                  <div style={{ color: C.muted, fontSize: 13 }}>{selected.client} · {selected.type}</div>
                 </div>
-              ))}
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ color: "#475569", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Move Stage</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {STAGES.map(s => (
-                  <button key={s} onClick={() => moveStage(selected.id, s)}
-                    style={{ background: selected.stage === s ? STAGE_CONFIG[s]?.bg : "transparent", color: STAGE_CONFIG[s]?.color, border: `1px solid ${STAGE_CONFIG[s]?.color}`, borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 11, fontWeight: selected.stage === s ? 700 : 400 }}>
-                    {s}
-                  </button>
+                <Badge stage={selected.stage} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                {[["Value", fmt(selected.value)], ["Win %", `${selected.winProb}%`], ["Due", selected.dueDate || "—"], ["Contact", selected.contact || "—"]].map(([l, v]) => (
+                  <div key={l} style={{ background: C.bg, borderRadius: 10, padding: 12, border: `1px solid ${C.border}` }}>
+                    <div style={{ color: C.muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{l}</div>
+                    <div style={{ color: C.accent, fontWeight: 700, fontSize: 15 }}>{v}</div>
+                  </div>
                 ))}
               </div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Move Stage</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {STAGES.map(s => {
+                    const col = STAGE_CONFIG[s].color;
+                    const active = selected.stage === s;
+                    return (
+                      <button key={s} onClick={() => moveStage(selected.id, s)} style={{ background: active ? STAGE_CONFIG[s].bg : "transparent", color: col, border: `1px solid ${col}`, borderRadius: 20, padding: "6px 14px", fontSize: 13, fontWeight: active ? 700 : 400, cursor: "pointer" }}>{s}</button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setSelected(null)} style={{ flex: 1, background: C.border, color: C.text, border: "none", borderRadius: 10, padding: 14, fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Close</button>
+                <button onClick={() => deleteLead(selected.id)} style={{ background: "#2d0f0f", color: C.red, border: `1px solid ${C.red}44`, borderRadius: 10, padding: "14px 16px", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Delete</button>
+              </div>
             </div>
-            <button style={styles.cancelBtn} onClick={() => setSelected(null)}>Close</button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add Lead Modal */}
-      {showAdd && (
-        <div style={styles.modal} onClick={() => setShowAdd(false)}>
-          <div style={styles.modalBox} onClick={e => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Add New Lead</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div><label style={styles.label}>Project Name</label><input style={styles.input} value={newLead.project} onChange={e => setNewLead(p => ({...p, project: e.target.value}))} placeholder="e.g. Downtown Office Complex" /></div>
-              <div style={styles.row2}>
-                <div><label style={styles.label}>Client</label><input style={styles.input} value={newLead.client} onChange={e => setNewLead(p => ({...p, client: e.target.value}))} placeholder="Company name" /></div>
-                <div><label style={styles.label}>Contact</label><input style={styles.input} value={newLead.contact} onChange={e => setNewLead(p => ({...p, contact: e.target.value}))} placeholder="Name" /></div>
-              </div>
-              <div style={styles.row2}>
-                <div><label style={styles.label}>Contract Value ($)</label><input style={styles.input} type="number" value={newLead.value} onChange={e => setNewLead(p => ({...p, value: e.target.value}))} placeholder="e.g. 1500000" /></div>
-                <div><label style={styles.label}>Win Probability (%)</label><input style={styles.input} type="number" min="0" max="100" value={newLead.winProb} onChange={e => setNewLead(p => ({...p, winProb: e.target.value}))} /></div>
-              </div>
-              <div style={styles.row2}>
-                <div>
-                  <label style={styles.label}>Type</label>
-                  <select style={styles.input} value={newLead.type} onChange={e => setNewLead(p => ({...p, type: e.target.value}))}>
-                    {["Office","Retail","Medical","Municipal","Hospitality","Industrial","Mixed Use"].map(t => <option key={t}>{t}</option>)}
-                  </select>
+        {/* Add Lead Bottom Sheet */}
+        {showAdd && (
+          <div style={{ position: "fixed", inset: 0, background: "#000000bb", zIndex: 100, display: "flex", alignItems: "flex-end" }} onClick={() => setShowAdd(false)}>
+            <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: "20px 20px 0 0", padding: 24, width: "100%", maxWidth: 600, margin: "0 auto", maxHeight: "92vh", overflowY: "auto", paddingBottom: "calc(24px + env(safe-area-inset-bottom))" }}>
+              <div style={{ width: 36, height: 4, background: C.border, borderRadius: 2, margin: "0 auto 20px" }} />
+              <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>New Bid</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {[{ label: "Project Name *", key: "project", placeholder: "e.g. Downtown Office Complex" }, { label: "Client / Company *", key: "client", placeholder: "Company name" }, { label: "Key Contact", key: "contact", placeholder: "Contact name" }].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <label style={labelStyle}>{label}</label>
+                    <input value={newLead[key]} onChange={e => setNewLead(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={inputStyle} />
+                  </div>
+                ))}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div><label style={labelStyle}>Value ($)</label><input type="number" value={newLead.value} onChange={e => setNewLead(p => ({ ...p, value: e.target.value }))} placeholder="1500000" style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Win %</label><input type="number" min="0" max="100" value={newLead.winProb} onChange={e => setNewLead(p => ({ ...p, winProb: e.target.value }))} style={inputStyle} /></div>
                 </div>
-                <div>
-                  <label style={styles.label}>Stage</label>
-                  <select style={styles.input} value={newLead.stage} onChange={e => setNewLead(p => ({...p, stage: e.target.value}))}>
-                    {STAGES.map(s => <option key={s}>{s}</option>)}
-                  </select>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={labelStyle}>Type</label>
+                    <select value={newLead.type} onChange={e => setNewLead(p => ({ ...p, type: e.target.value }))} style={inputStyle}>
+                      {["Office", "Retail", "Medical", "Municipal", "Hospitality", "Industrial", "Mixed Use"].map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Stage</label>
+                    <select value={newLead.stage} onChange={e => setNewLead(p => ({ ...p, stage: e.target.value }))} style={inputStyle}>
+                      {STAGES.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
                 </div>
+                <div><label style={labelStyle}>Bid Due Date</label><input type="date" value={newLead.dueDate} onChange={e => setNewLead(p => ({ ...p, dueDate: e.target.value }))} style={inputStyle} /></div>
               </div>
-              <div><label style={styles.label}>Bid Due Date</label><input style={styles.input} type="date" value={newLead.dueDate} onChange={e => setNewLead(p => ({...p, dueDate: e.target.value}))} /></div>
-            </div>
-            <div>
-              <button style={styles.saveBtn} onClick={addLead}>Add Lead</button>
-              <button style={styles.cancelBtn} onClick={() => setShowAdd(false)}>Cancel</button>
+              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                <button onClick={() => setShowAdd(false)} style={{ flex: 1, background: C.border, color: C.text, border: "none", borderRadius: 10, padding: 14, fontWeight: 600, fontSize: 15, cursor: "pointer" }}>Cancel</button>
+                <button onClick={addLead} style={{ flex: 2, background: C.accent, color: "#080c14", border: "none", borderRadius: 10, padding: 14, fontWeight: 800, fontSize: 15, cursor: "pointer" }}>Save Bid</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
