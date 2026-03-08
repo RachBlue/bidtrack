@@ -147,7 +147,7 @@ Using your knowledge of current construction costs in that region, provide a det
   "recommendation": "<one sentence on what to bid to win without underbidding>"
 }`;
 
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
